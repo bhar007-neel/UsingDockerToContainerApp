@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Neel’s Docker Learning Notebook</title>
+  <meta name="description" content="A beautiful, single‑page notebook capturing Neel’s Docker learning journey: roadmap, cheat sheet, examples, FAQs, and resources." />
+  <style>
+    :root{
+      --bg:#0b1020;         /* base background */
+      --panel:#0f1630;      /* card background */
+      --muted:#94a3b8;      /* muted text */
+      --text:#e5ecff;       /* main text */
+      --brand:#7c3aed;      /* primary */
+      --brand-2:#06b6d4;    /* accent */
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --ring: 0 0 0 3px rgba(124,58,237,.35);
+      --radius: 18px;
+      --shadow: 0 10px 30px rgba(2,6,23,.45), inset 0 -1px rgba(255,255,255,.03);
+      --code:#0b1226;
+      --code-border:#1e293b;
+    }
+    [data-theme="light"]{
+      --bg:#f7f8ff;
+      --panel:#ffffff;
+      --muted:#64748b;
+      --text:#0f172a;
+      --brand:#6d28d9;
+      --brand-2:#0891b2;
+      --shadow: 0 10px 26px rgba(2,6,23,.08), inset 0 -1px rgba(2,6,23,.03);
+      --code:#0f172a;
+      --code-border:#e2e8f0;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text); background:radial-gradient(1200px 700px at 10% -10%,rgba(124,58,237,.35),transparent 60%),
+                         radial-gradient(900px 600px at 120% 10%,rgba(6,182,212,.25),transparent 60%),
+                         var(--bg);
+      line-height:1.6;
+    }
+    a{color:var(--brand-2); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .container{max-width:1100px; margin:0 auto; padding:24px}
+    header.nav{
+      position:sticky; top:0; z-index:50; backdrop-filter: blur(12px);
+      background: linear-gradient(180deg, rgba(11,16,32,.85), rgba(11,16,32,.55));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav-inner{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 24px}
+    .logo{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px}
+    .logo-badge{width:34px; height:34px; border-radius:12px; background:linear-gradient(135deg,var(--brand),var(--brand-2)); box-shadow:var(--shadow); display:grid; place-items:center}
+    .logo-badge svg{filter:drop-shadow(0 6px 16px rgba(124,58,237,.45));}
+    .nav-links{display:flex; flex-wrap:wrap; gap:10px}
+    .nav-links a{padding:8px 12px; border-radius:12px; background:rgba(255,255,255,.05)}
+    .nav-actions{display:flex; gap:10px}
+    .btn{border:none; padding:10px 14px; background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:white; border-radius:12px; cursor:pointer; font-weight:700}
+    .btn.secondary{background:transparent; border:1px solid rgba(255,255,255,.12); color:var(--text)}
+    .btn:focus{outline:none; box-shadow:var(--ring)}
+
+    .hero{padding:60px 24px 30px}
+    .hero-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:30px}
+    .hero h1{font-size:clamp(28px,4vw,46px); line-height:1.1; margin:0 0 10px}
+    .subtitle{color:var(--muted); margin: 0 0 22px}
+    .tag{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:rgba(124,58,237,.15); border:1px solid rgba(124,58,237,.3); font-weight:700}
+
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .panel{padding:20px}
+
+    .grid{display:grid; gap:18px}
+    .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+    .grid.cols-2{grid-template-columns:repeat(2,1fr)}
+    @media (max-width:900px){ .hero-grid{grid-template-columns:1fr} .grid.cols-3,.grid.cols-2{grid-template-columns:1fr}}
+
+    .kpis{display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; margin-top:12px}
+    .kpi{padding:16px; border-radius:16px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06)}
+    .kpi .label{color:var(--muted); font-size:13px}
+    .kpi .value{font-size:22px; font-weight:800}
+
+    .section{padding:34px 24px}
+    .section h2{font-size:clamp(22px,3vw,32px); margin:0 0 14px}
+    .section p.lead{color:var(--muted); margin-top:0}
+
+    .steps{counter-reset: step}
+    .step{position:relative; padding-left:54px; margin:16px 0}
+    .step:before{counter-increment: step; content: counter(step); position:absolute; left:0; top:0; width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,var(--brand),var(--brand-2)); display:grid; place-items:center; font-weight:800}
+
+    .code{background:var(--code); border:1px solid var(--code-border); border-radius:14px; padding:14px; overflow:auto; position:relative}
+    pre{margin:0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:13.5px}
+    .copy{position:absolute; right:10px; top:10px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:var(--text); padding:6px 10px; border-radius:10px; cursor:pointer}
+
+    .pill{display:inline-block; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09); font-size:12px; color:var(--muted)}
+
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+    .tab{padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.12); cursor:pointer; background:rgba(255,255,255,.05)}
+    .tab.active{background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(6,182,212,.35)); border-color:transparent}
+
+    .cmd{display:flex; gap:10px; align-items:flex-start; justify-content:space-between; padding:12px; border:1px dashed rgba(255,255,255,.12); border-radius:12px}
+    .cmd code{white-space:nowrap}
+    .cmd .desc{color:var(--muted); font-size:13px}
+
+    details.faq{border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px 14px; background:rgba(255,255,255,.04)}
+    details.faq + details.faq{margin-top:10px}
+    details.faq > summary{cursor:pointer; font-weight:700}
+
+    .checklist{display:grid; gap:10px}
+    .todo{display:flex; align-items:center; gap:10px; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04)}
+    .todo input{width:18px; height:18px}
+    .todo.done{opacity:.7; text-decoration: line-through;}
+
+    .search{display:flex; align-items:center; gap:10px}
+    .search input{flex:1; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); color:var(--text)}
+
+    footer{padding:40px 24px; color:var(--muted); text-align:center}
+    .foot-links{display:flex; gap:12px; flex-wrap:wrap; justify-content:center}
+
+    .toc{position:sticky; top:68px}
+    .toc a{display:block; padding:8px 10px; border-radius:10px; color:var(--muted)}
+    .toc a.active{background:rgba(124,58,237,.18); color:var(--text)}
+
+    .badge{padding:6px 10px; border-radius:10px; background:rgba(34,197,94,.12); color:#86efac; border:1px solid rgba(34,197,94,.25)}
+    .warn{background:rgba(245,158,11,.12); color:#fde68a; border-color:rgba(245,158,11,.25)}
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner container">
+      <div class="logo">
+        <div class="logo-badge" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M3 16h18M3 12h18M3 8h18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span>Neel’s Docker Learning</span>
+      </div>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#roadmap">Roadmap</a>
+        <a href="#cheats">Cheat Sheet</a>
+        <a href="#examples">Examples</a>
+        <a href="#faq">Errors & Fixes</a>
+        <a href="#resources">Resources</a>
+      </nav>
+      <div class="nav-actions">
+        <button id="themeToggle" class="btn secondary" aria-label="Toggle theme">🌗 Theme</button>
+        <a href="#cheats" class="btn" style="text-decoration:none">Copy Commands</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero container">
+    <div class="hero-grid">
+      <div>
+        <span class="tag">🐳 Neel’s Notebook • Docker Journey</span>
+        <h1>From Zero ▶ Docker Hero</h1>
+        <p class="subtitle">A crisp, practical guide to containers—focused on <strong>doing</strong>. Save time with copy‑ready commands, simple examples, and fixes to real errors.</p>
+        <div class="kpis">
+          <div class="kpi"><div class="label">Learning Status</div><div class="value">Active</div></div>
+          <div class="kpi"><div class="label">Projects</div><div class="value">3 mini / 1 full</div></div>
+          <div class="kpi"><div class="label">Core Topics</div><div class="value">Images • Compose • Volumes</div></div>
+          <div class="kpi"><div class="label">Last Updated</div><div class="value" id="updated">—</div></div>
+        </div>
+      </div>
+      <div class="card panel">
+        <h3 style="margin-top:0">Quickstart (teach like I’m 2 🐣)</h3>
+        <div class="steps">
+          <div class="step"><strong>Install Docker Desktop.</strong> Open it. If the whale smiles, you’re good.</div>
+          <div class="step"><strong>Run a container:</strong> <code>docker run hello-world</code></div>
+          <div class="step"><strong>Pull an image:</strong> <code>docker pull nginx</code></div>
+          <div class="step"><strong>Start nginx:</strong> <code>docker run -p 8080:80 nginx</code> → open <code>localhost:8080</code></div>
+          <div class="step"><strong>Stop & remove:</strong> <code>docker ps</code> → copy CONTAINER ID → <code>docker stop &lt;id&gt; && docker rm &lt;id&gt;</code></div>
+        </div>
+        <p class="pill" style="margin-top:8px">Tip: Map ports <code>host:container</code>. If 8080 is busy, map 9090:80.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap" class="section container">
+    <div class="grid cols-3">
+      <aside class="card panel toc">
+        <h3 style="margin-top:0">On this page</h3>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#cheats">Cheat Sheet</a>
+        <a href="#examples">Examples</a>
+        <a href="#faq">Errors & Fixes</a>
+        <a href="#glossary">Glossary</a>
+        <a href="#resources">Resources</a>
+      </aside>
+
+      <div class="card panel" style="grid-column: span 2;">
+        <h2>Learning Roadmap</h2>
+        <p class="lead">Track progress. Your checks save to your browser (localStorage).</p>
+        <div class="checklist" id="checklist">
+          <label class="todo"><input type="checkbox" data-key="install"> Install Docker Desktop (or Engine on Linux)</label>
+          <label class="todo"><input type="checkbox" data-key="run"> Run hello‑world & nginx</label>
+          <label class="todo"><input type="checkbox" data-key="images"> Understand images vs containers</label>
+          <label class="todo"><input type="checkbox" data-key="dockerfile"> Write a basic Dockerfile</label>
+          <label class="todo"><input type="checkbox" data-key="compose"> Use docker‑compose for multi‑service app</label>
+          <label class="todo"><input type="checkbox" data-key="volumes"> Attach volumes & understand persistence</label>
+          <label class="todo"><input type="checkbox" data-key="network"> Create a user‑defined network</label>
+          <label class="todo"><input type="checkbox" data-key="publish"> Push to Docker Hub (private repo ok)</label>
+          <label class="todo"><input type="checkbox" data-key="hard"> Troubleshoot common errors</label>
+        </div>
+        <p class="pill" style="margin-top:12px">Goal: Build → Run → Persist → Network → Compose → Publish</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="cheats" class="section container">
+    <div class="card panel">
+      <h2>Docker Commands Cheat Sheet</h2>
+      <p class="lead">Filter by topic and click to copy commands. Search live.</p>
+      <div class="search" style="margin:12px 0">
+        <input id="searchInput" type="search" placeholder="Search commands… (e.g., port, remove, volume)"/>
+        <button class="btn secondary" id="clearSearch">Clear</button>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-topic="all" role="tab">All</button>
+        <button class="tab" data-topic="images" role="tab">Images</button>
+        <button class="tab" data-topic="containers" role="tab">Containers</button>
+        <button class="tab" data-topic="volumes" role="tab">Volumes & Networks</button>
+        <button class="tab" data-topic="compose" role="tab">Compose</button>
+        <button class="tab" data-topic="misc" role="tab">Misc</button>
+      </div>
+      <div id="cmdList" class="grid">
+        <!-- Commands injected by JS -->
+      </div>
+    </div>
+  </section>
+
+  <section id="examples" class="section container">
+    <div class="grid cols-2">
+      <div class="card panel">
+        <h2 style="margin-top:0">Example: Dockerfile (Node.js)</h2>
+        <p class="lead">Small, production‑ready-ish image with caching and non‑root user.</p>
+        <div class="code">
+          <button class="copy" data-copy="#df1">Copy</button>
+<pre id="df1"><code># syntax=docker/dockerfile:1
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production PORT=8080
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+USER node
+EXPOSE 8080
+CMD ["node","server.js"]
+</code></pre>
+        </div>
+        <p class="pill">Tip: Use multi‑stage builds to keep runtime images small.</p>
+      </div>
+      <div class="card panel">
+        <h2 style="margin-top:0">Example: docker‑compose.yml</h2>
+        <p class="lead">Web + DB with a named volume and network.</p>
+        <div class="code">
+          <button class="copy" data-copy="#dc1">Copy</button>
+<pre id="dc1"><code>services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
+    networks: [appnet]
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_PASSWORD=changeme
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [appnet]
+
+volumes:
+  pgdata:
+
+networks:
+  appnet:
+</code></pre>
+        </div>
+        <p class="pill warn">Remember to secure secrets (use env files, secret managers).</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="section container">
+    <div class="card panel">
+      <h2>Common Errors & Fixes</h2>
+      <details class="faq"><summary>Port already in use (EADDRINUSE)</summary>
+        <p>Another process is listening on that host port. Choose a free port or stop the process.</p>
+        <div class="code"><pre><code># find a free port quickly
+# try 9090 instead of 8080
+$ docker run -p 9090:80 nginx</code></pre></div>
+      </details>
+      <details class="faq"><summary>“permission denied” writing files from container</summary>
+        <p>On Linux, mount options or user mismatch cause this. Run as a user that owns the volume path or adjust permissions.</p>
+        <div class="code"><pre><code>$ docker run -u $(id -u):$(id -g) -v $(pwd)/data:/data app</code></pre></div>
+      </details>
+      <details class="faq"><summary>Container exits immediately</summary>
+        <p>The main process ended. Use a long‑running command (server) or <code>tail -f</code> during debugging.</p>
+        <div class="code"><pre><code>$ docker run yourapp tail -f /dev/null</code></pre></div>
+      </details>
+      <details class="faq"><summary>Can’t connect to service containers</summary>
+        <p>Put containers on the same user‑defined network, then use the service name as the hostname.</p>
+        <div class="code"><pre><code>$ docker network create appnet
+$ docker run --network appnet --name api yourapi
+$ docker run --network appnet curlimages/curl curl http://api:8080/health</code></pre></div>
+      </details>
+    </div>
+  </section>
+
+  <section id="glossary" class="section container">
+    <div class="card panel">
+      <h2>Glossary (fast intuition)</h2>
+      <ul>
+        <li><strong>Image</strong> – a template; like a class.</li>
+        <li><strong>Container</strong> – a running instance; like an object.</li>
+        <li><strong>Layer</strong> – cached step of an image build.</li>
+        <li><strong>Registry</strong> – image storage (Docker Hub, ECR).</li>
+        <li><strong>Volume</strong> – persistent data outside container FS.</li>
+        <li><strong>Network</strong> – virtual switch that connects containers.</li>
+        <li><strong>Compose</strong> – YAML for multi‑container apps.</li>
+      </ul>
+      <p class="badge" style="display:inline-block">Memory Hook:</p>
+      <p class="pill">Image = Recipe • Container = Cooked dish • Volume = Fridge • Network = Dining table</p>
+    </div>
+  </section>
+
+  <section id="resources" class="section container">
+    <div class="grid cols-2">
+      <div class="card panel">
+        <h2 style="margin-top:0">Study Plan (weekend sprint)</h2>
+        <ol>
+          <li>Rebuild Dockerfile twice with caching in mind.</li>
+          <li>Convert a “works on my machine” app to Compose (web + db).</li>
+          <li>Use a bind mount to live‑reload code in dev.</li>
+          <li>Push image to a private repo on Docker Hub.</li>
+          <li>Write a one‑page post: “What surprised me about Docker.”</li>
+        </ol>
+      </div>
+      <div class="card panel">
+        <h2 style="margin-top:0">Handy Links</h2>
+        <ul>
+          <li><a href="https://docs.docker.com/get-started/" target="_blank" rel="noreferrer">Docker – Get Started</a></li>
+          <li><a href="https://docs.docker.com/engine/reference/commandline/docker/" target="_blank" rel="noreferrer">CLI Reference</a></li>
+          <li><a href="https://docs.docker.com/compose/" target="_blank" rel="noreferrer">Compose Reference</a></li>
+          <li><a href="https://hub.docker.com/" target="_blank" rel="noreferrer">Docker Hub</a></li>
+        </ul>
+        <p class="pill">Use rate‑limited pulls wisely—authenticate with Docker Hub.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="foot-links">
+      <span>Built with ❤️ for learning.</span>
+      <span>Made by Neel.</span>
+      <button class="btn secondary" id="toTop">Back to top ↑</button>
+    </div>
+  </footer>
+
+  <script>
+    // Last updated label
+    document.getElementById('updated').textContent = new Date().toLocaleDateString();
+
+    // Theme toggle
+    const toggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme');
+    if(savedTheme){ document.documentElement.setAttribute('data-theme', savedTheme); }
+    toggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'light' ? '' : 'light';
+      if(next){ document.documentElement.setAttribute('data-theme', next); }
+      else { document.documentElement.removeAttribute('data-theme'); }
+      localStorage.setItem('theme', next);
+    });
+
+    // Back to top
+    document.getElementById('toTop').addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
+
+    // Table of contents active link highlighting
+    const tocLinks = Array.from(document.querySelectorAll('.toc a'));
+    const sections = tocLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const id = '#' + entry.target.id;
+        const link = tocLinks.find(a => a.getAttribute('href') === id);
+        if(entry.isIntersecting){
+          tocLinks.forEach(l => l.classList.remove('active'));
+          if(link) link.classList.add('active');
+        }
+      });
+    }, {rootMargin:'-50% 0px -40% 0px', threshold:0});
+    sections.forEach(s => observer.observe(s));
+
+    // Checklist persistence
+    const list = document.getElementById('checklist');
+    list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      const key = 'docker_check_' + cb.dataset.key;
+      const val = localStorage.getItem(key);
+      if(val === '1'){ cb.checked = true; cb.closest('.todo').classList.add('done'); }
+      cb.addEventListener('change', () => {
+        localStorage.setItem(key, cb.checked ? '1' : '0');
+        cb.closest('.todo').classList.toggle('done', cb.checked);
+      });
+    });
+
+    // Copy buttons for code blocks
+    function copyFrom(selector){
+      const el = document.querySelector(selector);
+      if(!el) return;
+      const text = el.innerText;
+      navigator.clipboard.writeText(text).then(()=>{
+        const btn = document.querySelector(`[data-copy="${selector}"]`);
+        if(btn){ btn.textContent = 'Copied!'; setTimeout(()=> btn.textContent = 'Copy', 1200); }
+      });
+    }
+    document.querySelectorAll('.copy').forEach(btn => btn.addEventListener('click', () => copyFrom(btn.dataset.copy)));
+
+    // Commands data
+    const commands = [
+      {topic:'images', cmd:'docker pull nginx', desc:'Download an image from a registry.'},
+      {topic:'images', cmd:'docker images', desc:'List images stored locally.'},
+      {topic:'images', cmd:'docker rmi <image>', desc:'Remove an image by name or ID.'},
+      {topic:'images', cmd:'docker build -t myapp:1.0 .', desc:'Build an image from a Dockerfile.'},
+
+      {topic:'containers', cmd:'docker run -it ubuntu bash', desc:'Start a container and open an interactive shell.'},
+      {topic:'containers', cmd:'docker run -d -p 8080:80 nginx', desc:'Run in background (detached) and map port.'},
+      {topic:'containers', cmd:'docker ps -a', desc:'List running/all containers.'},
+      {topic:'containers', cmd:'docker logs -f <container>', desc:'Stream logs from a container.'},
+      {topic:'containers', cmd:'docker exec -it <container> sh', desc:'Exec into a running container.'},
+      {topic:'containers', cmd:'docker stop <container> && docker rm <container>', desc:'Stop and remove a container.'},
+
+      {topic:'volumes', cmd:'docker volume create data', desc:'Create a named volume for persistence.'},
+      {topic:'volumes', cmd:'docker run -v data:/var/lib/mysql mysql:8', desc:'Attach a named volume.'},
+      {topic:'volumes', cmd:'docker network create appnet', desc:'Create a user-defined network.'},
+      {topic:'volumes', cmd:'docker run --network appnet --name api myapi', desc:'Run on a custom network by name.'},
+
+      {topic:'compose', cmd:'docker compose up --build', desc:'Build and start services from compose file.'},
+      {topic:'compose', cmd:'docker compose ps', desc:'List services in the app.'},
+      {topic:'compose', cmd:'docker compose logs -f', desc:'Tail logs for all services.'},
+      {topic:'compose', cmd:'docker compose down -v', desc:'Stop and remove services + volumes.'},
+
+      {topic:'misc', cmd:'docker system df', desc:'Show disk usage by images/containers.'},
+      {topic:'misc', cmd:'docker system prune -af', desc:'Clean up unused data aggressively.'},
+      {topic:'misc', cmd:'docker login', desc:'Authenticate with a registry.'},
+      {topic:'misc', cmd:'docker tag myapp:1.0 myuser/myapp:1.0', desc:'Tag an image for pushing.'},
+      {topic:'misc', cmd:'docker push myuser/myapp:1.0', desc:'Push an image to a registry.'}
+    ];
+
+    const cmdList = document.getElementById('cmdList');
+    function renderCommands(filter='all', query=''){
+      cmdList.innerHTML = '';
+      const q = query.trim().toLowerCase();
+      commands.filter(c => (filter==='all' || c.topic===filter) && (!q || c.cmd.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q))).forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'cmd';
+        const left = document.createElement('div');
+        left.innerHTML = `<div class="desc"><span class="pill" style="margin-right:6px">${c.topic}</span> ${c.desc}</div><code>${c.cmd}</code>`;
+        const btn = document.createElement('button');
+        btn.className = 'copy';
+        btn.textContent = 'Copy';
+        btn.addEventListener('click', () => {
+          navigator.clipboard.writeText(c.cmd).then(()=>{ btn.textContent='Copied!'; setTimeout(()=> btn.textContent='Copy', 1000); });
+        });
+        item.appendChild(left);
+        item.appendChild(btn);
+        cmdList.appendChild(item);
+      });
+    }
+    renderCommands();
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      renderCommands(t.dataset.topic, document.getElementById('searchInput').value);
+    }));
+
+    // Search
+    const search = document.getElementById('searchInput');
+    const clear = document.getElementById('clearSearch');
+    search.addEventListener('input', () => {
+      const active = document.querySelector('.tab.active')?.dataset.topic || 'all';
+      renderCommands(active, search.value);
+    });
+    clear.addEventListener('click', () => { search.value=''; const active = document.querySelector('.tab.active')?.dataset.topic || 'all'; renderCommands(active); });
+  </script>
+</body>
+</html>
